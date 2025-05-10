@@ -95,18 +95,6 @@ export class UserService {
     return { detail: 'Account disabled' };
   }
 
-  async isUserClient(email: string) {
-    const userClient = await this.userRepository.findOne({
-      where: {
-        email,
-      },
-      relations: {
-        client: true,
-      },
-    });
-    console.log(userClient);
-  }
-
   async findByEmail(email: string): Promise<UserEntity> {
     return await this.userRepository.findOne({
       where: {
@@ -119,93 +107,5 @@ export class UserService {
 
   async createUser(user: UserEntity): Promise<UserEntity> {
     return await this.userRepository.save(user);
-  }
-
-  async getClientsAndAppointmentsForIndependent(
-    email: string,
-  ): Promise<UserEntity> | null {
-    const queryBuilder = await this.userRepository
-      .createQueryBuilder('u')
-      .select([
-        'u.id as id',
-        'u.email as email',
-        'u.lastname as lastname',
-        'u.firstname as firstname',
-        'u.password as password',
-        'u.disabled as disabled',
-      ])
-      .addSelect(
-        `JSON_AGG(
-        JSON_BUILD_OBJECT(
-            'client', JSON_BUILD_OBJECT(
-                'id', c.id,
-                'email', c.email,
-                'lastname', c.lastname,
-                'firstname', c.firstname
-            ),
-            'appointments', (
-                 SELECT JSON_AGG(a)
-                FROM APPOINTMENT a
-                WHERE a."clientId" = c.id
-                AND a."independentId" = u.id and a.d_day >= now()
-            )
-        )
-    )`,
-        'clients_with_appointments',
-      )
-      .innerJoin(
-        'independents_clients_relations',
-        'ic_relations',
-        'ic_relations."independentId" = u.id',
-      )
-      .innerJoin('user_entity', 'c', `c.id = ic_relations."clientId"`)
-      .where('u.email = :email', {
-        email,
-      })
-      .groupBy('u.id')
-      .getRawMany();
-    return queryBuilder[0] || null;
-
-    //     u.email,
-    //     u.password,
-    //     u.lastname,
-    //     u.firstname,
-    //     JSON_AGG(
-    //         JSON_BUILD_OBJECT(
-    //             'client', JSON_BUILD_OBJECT(
-    //                 'id', c.id,
-    //                 'email', c.email,
-    //                 'lastname', c.lastname,
-    //                 'firstname', c.firstname
-    //             ),
-    //             'appointments', (
-    //                  SELECT JSON_AGG(a)
-    //                 FROM APPOINTMENT a
-    //                 WHERE a."clientId" = c.id
-    //                 AND a."independentId" = u.id and a.d_day >= now()
-    //             )
-    //         )
-    //     ) AS clients_with_appointments
-    // FROM user_entity as u
-    // INNER JOIN independents_clients_relations as ic_relations
-    //     ON ic_relations."independentId" = u.id
-    // INNER JOIN user_entity as c
-    //     ON c.id = ic_relations."clientId"
-    // WHERE u.email = 'D@gmail.com'
-    // GROUP BY u.id, u.email, u.lastname, u.firstname`,
-    //     );
-  }
-
-  async isIndependent(email: string): Promise<boolean> {
-    const user = await this.userRepository.findOne({
-      where: {
-        email,
-      },
-      relations: ['independent'],
-    });
-
-    if (!user) throw new NotFoundException();
-
-    return user.independent ? true : false;
   }
 }

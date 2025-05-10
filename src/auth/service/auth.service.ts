@@ -8,13 +8,8 @@ import { NotSamePasswordException } from '../exceptions/not-same-password.except
 import * as bcrypt from 'bcrypt';
 import { WrongPasswordException } from '../exceptions/wrong-password.exception';
 import { JwtService } from '@nestjs/jwt';
-import { UserCredentialsDto } from '../dto/user-credentials.dto';
-import { UserType } from 'src/utils/enums/user-type.enum';
 import { UserService } from 'src/user/service/user.service';
-import { ClientEntity } from 'src/client/entities/client.entity';
-import { IndependentEntity } from 'src/independent/entities/independent.entity';
 import { BadCredentialsException } from '../exceptions/bad-credentials.exception';
-import { instanceToPlain, plainToClass } from 'class-transformer';
 import { UserNotFoundException } from 'src/user/exceptions/user-not-found.exception';
 import { EmailDto } from 'src/shared/dto/email.dto';
 
@@ -26,10 +21,7 @@ export class AuthService {
   ) {}
 
   async login(loginDto: LoginDto) {
-    const user =
-      await this.userService.getClientsAndAppointmentsForIndependent(
-        'B@gmail.com',
-      );
+    const user = await this.userService.findByEmail(loginDto.email);
 
     if (!user || user.disabled) {
       throw new BadCredentialsException();
@@ -42,21 +34,6 @@ export class AuthService {
     if (!isSamePassword) {
       throw new WrongPasswordException();
     }
-    const transformData = (user: UserEntity) => {
-      const flatData = instanceToPlain({
-        ...user,
-        ...user.independent,
-        role:
-          user.hasOwnProperty('independent') && user.independent
-            ? UserType.INDEPENDENT
-            : UserType.CLIENT,
-        appointments: user.independent?.appointments || [],
-      });
-      delete flatData.independent;
-      delete flatData.password;
-
-      return flatData;
-    };
 
     const payload = {
       email: user.email,
@@ -89,10 +66,6 @@ export class AuthService {
     return payload;
   }
 
-  async getUserInformations(userCredentialsDto: UserCredentialsDto) {
-    return {};
-  }
-
   async register(registerDto: RegisterDto) {
     const user = await this.userService.findByEmail(registerDto.email);
 
@@ -106,16 +79,6 @@ export class AuthService {
     const newUser = new UserEntity();
     registerDto.password = await hashPassword(registerDto.password);
     Object.assign(newUser, registerDto);
-
-    if (registerDto.type === UserType.INDEPENDENT) {
-      const independentEntity = new IndependentEntity();
-      Object.assign(independentEntity, registerDto);
-      newUser.independent = independentEntity;
-    } else {
-      const clientEntity = new ClientEntity();
-      Object.assign(clientEntity, registerDto);
-      newUser.client = clientEntity;
-    }
 
     await this.userService.createUser(newUser);
 
@@ -154,6 +117,7 @@ export class AuthService {
     }
     return true;
   }
+
   async getNewPasswordHashed({ email }: EmailDto) {
     const user = await this.userExists(email);
     if (!user) {

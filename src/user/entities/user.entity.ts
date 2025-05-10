@@ -2,12 +2,9 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { IndependentEntity } from '../../independent/entities/independent.entity';
-import { ClientEntity } from '../../client/entities/client.entity';
 
 @Entity()
 export class UserEntity {
@@ -28,14 +25,6 @@ export class UserEntity {
 
   @Column({ default: false, enum: [false, true] })
   disabled: boolean;
-
-  @OneToOne(() => IndependentEntity, (independent) => independent.user, {
-    cascade: true,
-  })
-  independent: IndependentEntity;
-
-  @OneToOne(() => ClientEntity, (client) => client.user, { cascade: true })
-  client: ClientEntity;
 
   @CreateDateColumn()
   createAt: Date;

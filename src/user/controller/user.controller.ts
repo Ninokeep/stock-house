@@ -73,7 +73,6 @@ export class UserController {
     )
     params?: FindAllParamsDto,
   ) {
-    this.userService.isUserClient('Elisaaaa@gmail.com');
     return this.userService.findAll(params);
   }
 }
