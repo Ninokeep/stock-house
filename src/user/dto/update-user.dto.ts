@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsEmail,
+  IsEnum,
   IsIn,
-  IsNumber,
   IsOptional,
   IsString,
   IsStrongPassword,
@@ -10,12 +11,23 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { TrimWhiteSpace } from '../../decorators/trim-white-space.decorator';
+import { UserRole } from '../enum/user-role.enum';
 
 export class UserUpdateDto {
   @IsString()
   @IsOptional()
   @ApiProperty()
-  username?: string;
+  lastname?: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  firstname?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  @ApiProperty()
+  disabled?: boolean;
 
   @IsEmail()
   @IsOptional()
@@ -36,17 +48,12 @@ export class UserUpdateDto {
   })
   password?: string;
 
-  @IsNumber()
-  @IsOptional()
-  @ApiProperty()
-  draftBase?: number;
-
   @ApiProperty()
   @IsOptional()
-  @IsIn(['user', 'admin'])
-  role: string;
+  @IsEnum(UserRole)
+  role: UserRole;
 
   static getPropertyNames(): string[] {
-    return ['username', 'email', 'password', 'draftBase', 'role'];
+    return ['lastname', 'email', 'password', 'role', 'firstname', 'disabled'];
   }
 }

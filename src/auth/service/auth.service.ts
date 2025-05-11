@@ -51,7 +51,6 @@ export class AuthService {
     });
 
     return {
-      statusCode: 200,
       data: user,
       access_token: accessToken,
       refresh_token: refreshToken,

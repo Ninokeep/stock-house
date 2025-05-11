@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
-import { IsEmail, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
+import { UserRole } from '../enum/user-role.enum';
 
 export class FindAllParamsDto {
   @IsEmail()
@@ -12,13 +13,8 @@ export class FindAllParamsDto {
   @Type(() => String)
   username?: string;
 
-  @IsNumber()
-  @IsOptional()
-  @Type(() => Number)
-  draftBase?: number;
-
-  @IsString()
+  @IsEnum(UserRole)
   @IsOptional()
   @Type(() => String)
-  role?: string;
+  role?: UserRole;
 }
