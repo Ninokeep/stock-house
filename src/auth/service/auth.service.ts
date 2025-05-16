@@ -84,17 +84,11 @@ export class AuthService {
     return { message: 'User created !' };
   }
 
-  private async checkSamePassword(
+  protected async checkSamePassword(
     password: string,
     hash: string,
   ): Promise<boolean> {
-    const isMatch = await bcrypt.compare(password, hash);
-
-    if (!isMatch) {
-      return false;
-    }
-
-    return true;
+    return await bcrypt.compare(password, hash);
   }
 
   private async generateToken(payload: Buffer | object) {
