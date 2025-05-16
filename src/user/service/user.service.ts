@@ -101,7 +101,6 @@ export class UserService {
         email,
         disabled: false,
       },
-      relations: ['independent.appointments', 'client.user'],
     });
   }
 

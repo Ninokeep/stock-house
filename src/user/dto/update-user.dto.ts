@@ -3,7 +3,6 @@ import {
   IsBoolean,
   IsEmail,
   IsEnum,
-  IsIn,
   IsOptional,
   IsString,
   IsStrongPassword,
@@ -51,7 +50,7 @@ export class UserUpdateDto {
   @ApiProperty()
   @IsOptional()
   @IsEnum(UserRole)
-  role: UserRole;
+  role?: UserRole;
 
   static getPropertyNames(): string[] {
     return ['lastname', 'email', 'password', 'role', 'firstname', 'disabled'];

@@ -1,17 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserService } from './user.service';
+import { UserService } from '../user.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { UserEntity } from '../entities/user.entity';
+import { UserEntity } from '../../entities/user.entity';
 import { Repository } from 'typeorm';
-import { UserUpdateDto } from '../dto/update-user.dto';
-import { UserNotFoundException } from '../exceptions/user-not-found.exception';
+import { UserUpdateDto } from '../../dto/update-user.dto';
+import { UserNotFoundException } from '../../exceptions/user-not-found.exception';
 import { BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 describe('UserService', () => {
   let userService: UserService;
   let userRepository: Repository<UserEntity>;
-  let jwtService: JwtService;
 
   beforeEach(async () => {
     const mockJwtService = {
@@ -74,11 +73,11 @@ describe('UserService', () => {
     const user = {
       id: 11,
       email: 'toto@gmail.com',
-      username: 'toto',
+      lastname: 'toto',
+      firstname: 'lolo',
       password: 'totoletoto',
       draftBase: 1,
       role: 'user',
-      bases: [],
     };
     const id = 1;
     const updateUserDto = {} as UserUpdateDto;
@@ -92,17 +91,16 @@ describe('UserService', () => {
     const user = {
       id: 11,
       email: 'toto@gmail.com',
-      username: 'toto',
+      lastname: 'toto',
+      firstname: 'lolo',
       password: 'totoletoto',
-      draftBase: 1,
       role: 'user',
-      bases: [],
     };
     const id = 1;
-    const updateUserDto = { username: 'jean' } as UserUpdateDto;
+    const updateUserDto = { lastname: 'jean' } as UserUpdateDto;
     userRepository.update = jest.fn().mockResolvedValue(user);
     userRepository.findOneBy = jest.fn().mockResolvedValue(user);
     const result = await userService.update(id, updateUserDto);
-    expect(result.username).toEqual('jean');
+    expect(result.lastname).toEqual('jean');
   });
 });

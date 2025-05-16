@@ -3,15 +3,15 @@ import { UserEntity } from '../../user/entities/user.entity';
 import { LoginDto } from '../dto/login.dto';
 import { RegisterDto } from '../dto/register.dto';
 import { UserAlreadyExistException } from '../exceptions/user-already-exist.exception';
-import { hashPassword } from 'src/utils/hash-password';
+import { hashPassword } from '../../utils/hash-password';
 import { NotSamePasswordException } from '../exceptions/not-same-password.exception';
 import * as bcrypt from 'bcrypt';
 import { WrongPasswordException } from '../exceptions/wrong-password.exception';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from 'src/user/service/user.service';
+import { UserService } from '../../user/service/user.service';
 import { BadCredentialsException } from '../exceptions/bad-credentials.exception';
-import { UserNotFoundException } from 'src/user/exceptions/user-not-found.exception';
-import { EmailDto } from 'src/shared/dto/email.dto';
+import { UserNotFoundException } from '../../user/exceptions/user-not-found.exception';
+import { EmailDto } from '../../shared/dto/email.dto';
 
 @Injectable()
 export class AuthService {
