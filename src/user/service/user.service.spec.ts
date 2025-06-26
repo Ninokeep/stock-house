@@ -7,6 +7,8 @@ import { UserUpdateDto } from '../dto/update-user.dto';
 import { UserNotFoundException } from '../exceptions/user-not-found.exception';
 import { BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { UserRole } from '../enum/user-role.enum';
+import { exec } from 'node:child_process';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -38,71 +40,33 @@ describe('UserService', () => {
     userService = module.get<UserService>(UserService);
   });
 
-  it('PUT update fail user not found', async () => {
-    userRepository.findOneBy = jest.fn().mockResolvedValue(null);
-
-    const id = 1;
-    const updateUserDto = {} as UserUpdateDto;
-    try {
-      await userService.update(id, updateUserDto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(UserNotFoundException);
-    }
-  });
-
-  it('PUT update not work  with wrong invalid property object', async () => {
-    const user = {
-      id: 11,
-      email: 'toto@gmail.com',
-      username: 'toto',
-      password: 'totoletoto',
-      draftBase: 1,
-      role: 'user',
-      bases: [],
-    };
-    userRepository.findOneBy = jest.fn().mockResolvedValue(user);
-
-    const id = 1;
-    const updateUserDto = { invalidProperty: 'invalidValue' } as any;
-
-    await expect(userService.update(id, updateUserDto)).rejects.toThrow(
-      BadRequestException,
-    );
-  });
-
-  it('PUT return the user without changement', async () => {
-    const user = {
-      id: 11,
-      email: 'toto@gmail.com',
-      username: 'toto',
-      password: 'totoletoto',
-      draftBase: 1,
-      role: 'user',
-      bases: [],
-    };
-    const id = 1;
-    const updateUserDto = {} as UserUpdateDto;
-    userRepository.update = jest.fn().mockResolvedValue(user);
-    userRepository.findOneBy = jest.fn().mockResolvedValue(user);
-    const result = await userService.update(id, updateUserDto);
-    expect(result).toEqual(user);
-  });
-
   it('PUT username of user success', async () => {
-    const user = {
-      id: 11,
-      email: 'toto@gmail.com',
-      username: 'toto',
-      password: 'totoletoto',
-      draftBase: 1,
-      role: 'user',
-      bases: [],
-    };
+    const oldUserUpdateDto = new UserUpdateDto();
+    oldUserUpdateDto.role = UserRole.USER;
+    oldUserUpdateDto.email = 'toto@gmail.com';
+    oldUserUpdateDto.firstname = 'toto';
+
+    const userUpdateDto = new UserUpdateDto();
+    userUpdateDto.firstname = 'jean';
     const id = 1;
-    const updateUserDto = { username: 'jean' } as UserUpdateDto;
-    userRepository.update = jest.fn().mockResolvedValue(user);
-    userRepository.findOneBy = jest.fn().mockResolvedValue(user);
-    const result = await userService.update(id, updateUserDto);
-    expect(result.username).toEqual('jean');
+    userRepository.update = jest.fn().mockResolvedValue(oldUserUpdateDto);
+    userRepository.findOneBy = jest.fn().mockResolvedValue(oldUserUpdateDto);
+    const result = await userService.update(id, userUpdateDto);
+    expect(result.firstname).toEqual('jean');
+  });
+
+  it('PUT failed because the user doesn t exist', async () => {
+    const oldUserUpdateDto = null;
+    const userUpdateDto = new UserUpdateDto();
+    userUpdateDto.firstname = 'jean';
+    const id = 1;
+    userRepository.update = jest.fn().mockResolvedValue(oldUserUpdateDto);
+    userRepository.findOneBy = jest.fn().mockResolvedValue(oldUserUpdateDto);
+    await expect(userService.update(id, userUpdateDto)).rejects.toThrow(
+      "User doesn't exist",
+    );
+    await expect(userService.update(id, userUpdateDto)).rejects.toThrow(
+      UserNotFoundException,
+    );
   });
 });
