@@ -6,4 +6,8 @@ export class CreateTodoDto {
 
   @Length(10)
   description: string;
+
+  static getPropertyNames(): string[] {
+    return ['title', 'description'];
+  }
 }

@@ -1,26 +1,63 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Todo } from './entities/todo.entity';
+import { UserUpdateDto } from '../user/dto/update-user.dto';
+import { hashPassword } from '../utils/hash-password';
+import { UserNotFoundException } from '../user/exceptions/user-not-found.exception';
 
 @Injectable()
 export class TodoService {
-  create(createTodoDto: CreateTodoDto) {
-    return 'This action adds a new todo';
+  constructor(
+    @InjectRepository(Todo)
+    private readonly todoRepository: Repository<Todo>,
+  ) {}
+
+  async create(createTodoDto: CreateTodoDto): Promise<Todo> {
+    return await this.todoRepository.save(createTodoDto);
   }
 
-  findAll() {
-    return `This action returns all todo`;
+  async findAll() {
+    return await this.todoRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} todo`;
+  async findOne(id: number) {
+    return await this.todoRepository.findOneBy({ id });
   }
 
-  update(id: number, updateTodoDto: UpdateTodoDto) {
-    return `This action updates a #${id} todo`;
+  async update(id: number, updateTodoDto: UpdateTodoDto) {
+    const todo = await this.todoRepository.findOneBy({ id });
+    if (!todo) {
+      throw new HttpException("User doesn't exist", HttpStatus.NOT_FOUND);
+    }
+
+    const invalidProps = Object.keys(updateTodoDto).filter(
+      (item) => !CreateTodoDto.getPropertyNames().includes(item),
+    );
+
+    if (invalidProps.length > 0) {
+      throw new BadRequestException();
+    }
+
+    await this.todoRepository.update(id, updateTodoDto);
+    return { ...todo, ...updateTodoDto };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} todo`;
+  async remove(id: number) {
+    const todo = await this.todoRepository.findOneBy({ id });
+
+    if (todo === null) {
+      throw new HttpException("User doesn't exist", HttpStatus.NOT_FOUND);
+    }
+
+    await this.todoRepository.delete(id);
+    return {};
   }
 }
