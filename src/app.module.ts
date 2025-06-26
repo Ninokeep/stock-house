@@ -4,6 +4,7 @@ import { UserEntity } from './user/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Usermodule } from './user/user.module';
+import { TodoModule } from './todo/todo.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { Usermodule } from './user/user.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    TodoModule,
   ],
 })
 export class AppModule {}
