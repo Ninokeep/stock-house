@@ -9,9 +9,6 @@ import { UpdateTodoDto } from './dto/update-todo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Todo } from './entities/todo.entity';
-import { UserUpdateDto } from '../user/dto/update-user.dto';
-import { hashPassword } from '../utils/hash-password';
-import { UserNotFoundException } from '../user/exceptions/user-not-found.exception';
 
 @Injectable()
 export class TodoService {
@@ -29,13 +26,17 @@ export class TodoService {
   }
 
   async findOne(id: number) {
-    return await this.todoRepository.findOneBy({ id });
+    const todo = await this.todoRepository.findOneBy({ id });
+    if (!todo) {
+      throw new HttpException("Todo doesn't exist", HttpStatus.NOT_FOUND);
+    }
+    return todo;
   }
 
   async update(id: number, updateTodoDto: UpdateTodoDto) {
     const todo = await this.todoRepository.findOneBy({ id });
     if (!todo) {
-      throw new HttpException("User doesn't exist", HttpStatus.NOT_FOUND);
+      throw new HttpException("Todo doesn't exist", HttpStatus.NOT_FOUND);
     }
 
     const invalidProps = Object.keys(updateTodoDto).filter(
